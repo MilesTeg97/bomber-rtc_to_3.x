@@ -18,8 +18,8 @@ run/main_scene="res://lobby.tscn"
 config/icon="res://icon.png"
 
 [autoload]
-
 gamestate="*res://gamestate.gd"
+Client="*res://signaling/client/multiplayer_client.gd"
 
 [debug]
 

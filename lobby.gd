@@ -6,6 +6,7 @@ func _ready():
 	gamestate.connect("connection_failed", self, "_on_connection_failed")
 	gamestate.connect("connection_succeeded", self, "_on_connection_success")
 	gamestate.connect("player_list_changed", self, "refresh_lobby")
+	gamestate.connect("lobby_joined", self, "_update_lobby")
 	gamestate.connect("game_ended", self, "_on_game_ended")
 	gamestate.connect("game_error", self, "_on_game_error")
 	# Set the player name according to the system username. Fallback to the path.
@@ -14,6 +15,10 @@ func _ready():
 	else:
 		var desktop_path = OS.get_system_dir(0).replace("\\", "/").split("/")
 		$Connect/Name.text = desktop_path[desktop_path.size() - 2]
+
+
+func _update_lobby(text):
+	$Players/Lobby.text = text
 
 
 func _on_host_pressed():
@@ -26,8 +31,12 @@ func _on_host_pressed():
 	$Connect/ErrorLabel.text = ""
 
 	var player_name = $Connect/Name.text
-	gamestate.host_game(player_name)
-	refresh_lobby()
+	
+	# WEBRTC: host game code.
+	var ip = $Connect/IPAddress.text
+	gamestate.host_game(player_name, ip)
+	
+	# WEBRTC: refresh_lobby() gets called by the player_list_changed signal, emitted when host is ready.
 
 
 func _on_join_pressed():
@@ -36,8 +45,10 @@ func _on_join_pressed():
 		return
 
 	var ip = $Connect/IPAddress.text
-	if not ip.is_valid_ip_address():
-		$Connect/ErrorLabel.text = "Invalid IP address!"
+	var lobby = $Connect/Lobby.text
+	
+	if lobby == "":
+		$Connect/ErrorLabel.text = "Must specify a lobby when joining!"
 		return
 
 	$Connect/ErrorLabel.text = ""
@@ -45,7 +56,9 @@ func _on_join_pressed():
 	$Connect/Join.disabled = true
 
 	var player_name = $Connect/Name.text
-	gamestate.join_game(ip, player_name)
+	gamestate.join_game(ip, player_name, lobby)
+	
+	# WEBRTC: refresh_lobby() gets called by the player_list_changed signal.
 
 
 func _on_connection_success():
@@ -65,6 +78,8 @@ func _on_game_ended():
 	$Players.hide()
 	$Connect/Host.disabled = false
 	$Connect/Join.disabled = false
+	$Players/Lobby.text = ""
+	$Connect/Lobby.text = ""
 
 
 func _on_game_error(errtxt):

@@ -7,6 +7,7 @@ signal connection_failed()
 signal connection_succeeded()
 signal game_ended()
 signal game_error(what)
+signal lobby_joined(lobby)
 
 # Default game server port. Can be any number between 1024 and 49151.
 # Not on the list of registered or common ports as of November 2020:
@@ -32,12 +33,15 @@ func _ready():
 	get_tree().connect("connected_to_server", self, "_connected_ok")
 	get_tree().connect("connection_failed", self, "_connected_fail")
 	get_tree().connect("server_disconnected", self, "_server_disconnected")
+	Client.connect("lobby_joined", self, "_signaling_inited")
+	Client.connect("disconnected", self, "_signaling_disconnected")
 
 
 # Callback from SceneTree.
-func _player_connected(id):
-	# Registration of a client beings here, tell the connected player that we are here.
-	rpc_id(id, "register_player", player_name)
+func _player_connected(_id):	
+	# This is not used in this demo, because _connected_ok is called for clients
+	# on success and will do the job.
+	pass
 
 
 # Callback from SceneTree.
@@ -49,11 +53,16 @@ func _player_disconnected(id):
 	else: # Game is not in progress.
 		# Unregister this player.
 		unregister_player(id)
+		for p_id in players:
+			# Erase in the server.
+			rpc_id(p_id, "unregister_player", id)
 
 
 # Callback from SceneTree, only for clients (not server).
 func _connected_ok():
-	# We just connected to a server
+	# We just connected to a server.
+	# Registration of a client beings here, tell everyone that we are here.
+	rpc("register_player", get_tree().get_network_unique_id(), player_name)
 	emit_signal("connection_succeeded")
 
 
@@ -71,14 +80,19 @@ func _connected_fail():
 
 # Lobby management functions.
 
-remote func register_player(new_player_name):
-	var id = get_tree().get_rpc_sender_id()
+remote func register_player(id, new_player_name):
 	print(id)
+	if get_tree().is_network_server():
+		rpc_id(id, "register_player", 1, player_name)
+		for p_id in players:
+			rpc_id(id, "register_player", p_id, players[p_id])
+			rpc_id(p_id, "register_player", id, new_player_name)
+
 	players[id] = new_player_name
 	emit_signal("player_list_changed")
 
 
-func unregister_player(id):
+remote func unregister_player(id):
 	players.erase(id)
 	emit_signal("player_list_changed")
 
@@ -137,19 +151,24 @@ remote func ready_to_start(id):
 		post_start_game()
 
 
-func host_game(new_player_name):
+func host_game(new_player_name, ip):
 	player_name = new_player_name
-	peer = NetworkedMultiplayerENet.new()
-	peer.create_server(DEFAULT_PORT, MAX_PEERS)
-	get_tree().set_network_peer(peer)
+	Client.start(ip)
 
-
-func join_game(ip, new_player_name):
+func join_game(ip, new_player_name, lobby):
 	player_name = new_player_name
-	peer = NetworkedMultiplayerENet.new()
-	peer.create_client(ip, DEFAULT_PORT)
-	get_tree().set_network_peer(peer)
+	Client.start(ip, lobby)
 
+
+func _signaling_disconnected():
+	if not Client.sealed: # Game has not started yet.
+		emit_signal("game_error", "Signaling server disconnected:\n%d: %s" % [Client.code, Client.reason])
+		end_game()
+
+func _signaling_inited(lobby):
+	get_tree().set_network_peer(Client.rtc_mp)
+	emit_signal("lobby_joined", lobby)
+	emit_signal("player_list_changed")
 
 func get_player_list():
 	return players.values()
@@ -161,6 +180,7 @@ func get_player_name():
 
 func begin_game():
 	assert(get_tree().is_network_server())
+	Client.seal_lobby()
 
 	# Create a dictionary with peer id and respective spawn points, could be improved by randomizing.
 	var spawn_points = {}
@@ -183,3 +203,6 @@ func end_game():
 
 	emit_signal("game_ended")
 	players.clear()
+	
+	get_tree().set_network_peer(null) 
+	Client.stop()
