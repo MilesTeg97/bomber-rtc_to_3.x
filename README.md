@@ -1,14 +1,14 @@
-# Multiplayer Bomber
+# Multiplayer Bomber - WebRTC
 
-A multiplayer implementation of the classical bomberman game.
-One of the players should press "host", while the other
-should type in his address and press "play".
+A multiplayer (WebRTC) implementation of the classical bomberman game.
+
+Instructions will follow.
+
+This is an updated version (new syntax, minor fixes etc.) for Godot 3.5+. It is based on a more recent version from https://github.com/godotengine/godot-demo-projects/tree/master/networking/multiplayer_bomber . 
 
 Language: GDScript
 
 Renderer: GLES 2
-
-Check out this demo on the asset library: https://godotengine.org/asset-library/asset/139
 
 ## Screenshots
 
