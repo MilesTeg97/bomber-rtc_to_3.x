@@ -166,7 +166,7 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="server" type="Button" parent="Connect"]
+[node name="Server" type="Button" parent="Connect"]
 margin_left = 181.0
 margin_top = 125.0
 margin_right = 246.0
