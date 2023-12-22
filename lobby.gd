@@ -10,8 +10,13 @@ func _ready():
 	gamestate.connect("lobby_joined", self, "_update_lobby")
 	gamestate.connect("game_ended", self, "_on_game_ended")
 	gamestate.connect("game_error", self, "_on_game_error")
+	
 	if OS.get_name() == 'HTML5':
 		$connect/server.hide()
+		var data = JavaScript.eval("(new URLSearchParams(window.location.hash.replace('#', '', 1))).get('lobby')")
+		if typeof(data) == TYPE_STRING:
+			$connect/lobby.text = data
+	
 	# Set the player name according to the system username. Fallback to the path.
 	if OS.has_environment("USERNAME"):
 		$Connect/Name.text = OS.get_environment("USERNAME")
@@ -21,6 +26,8 @@ func _ready():
 
 
 func _update_lobby(text):
+	if OS.get_name() == 'HTML5':
+		JavaScript.eval("var x = new URLSearchParams(window.location.hash.replace('#', '', 1)); x.set('lobby', '" + text + "'); window.location.hash = x.toString()")
 	$Players/Lobby.text = text
 
 
@@ -81,6 +88,8 @@ func _on_game_ended():
 	$Players.hide()
 	$Connect/Host.disabled = false
 	$Connect/Join.disabled = false
+	if OS.get_name() == 'HTML5':
+		JavaScript.eval("var x = new URLSearchParams(window.location.hash.replace('#', '', 1)); x.delete('lobby'); window.location.hash = x.toString()")
 	$Players/Lobby.text = ""
 	$Connect/Lobby.text = ""
 
