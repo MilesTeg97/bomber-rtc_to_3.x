@@ -1,5 +1,6 @@
 extends Control
 
+var port = gamestate.DEFAULT_PORT
 
 func _ready():
 	# Called every time the node is added to the scene.
@@ -9,6 +10,8 @@ func _ready():
 	gamestate.connect("lobby_joined", self, "_update_lobby")
 	gamestate.connect("game_ended", self, "_on_game_ended")
 	gamestate.connect("game_error", self, "_on_game_error")
+	if OS.get_name() == 'HTML5':
+		$connect/server.hide()
 	# Set the player name according to the system username. Fallback to the path.
 	if OS.has_environment("USERNAME"):
 		$Connect/Name.text = OS.get_environment("USERNAME")
@@ -106,3 +109,12 @@ func _on_start_pressed():
 
 func _on_find_public_ip_pressed():
 	OS.shell_open("https://icanhazip.com/")
+
+
+func _on_server_toggled(button_pressed):
+	if button_pressed:
+		Server.listen(port)
+		$connect/server.text = "Stop"
+	else:
+		Server.stop()
+		$connect/server.text = "Listen"

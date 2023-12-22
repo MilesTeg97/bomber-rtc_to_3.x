@@ -20,6 +20,7 @@ config/icon="res://icon.png"
 [autoload]
 gamestate="*res://gamestate.gd"
 Client="*res://signaling/client/multiplayer_client.gd"
+Server="*res://signaling/server/ws_webrtc_server.gd"
 
 [debug]
 
