@@ -17,6 +17,9 @@ const DEFAULT_PORT = 10567
 # Max number of players.
 const MAX_PEERS = 12
 
+# Enable/disable native listen-server functionality on this machine.
+const LISTEN_SERVER = false
+
 var peer = null
 
 # Name for my player.

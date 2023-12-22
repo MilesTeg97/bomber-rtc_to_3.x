@@ -1,6 +1,7 @@
 extends Control
 
 var port = gamestate.DEFAULT_PORT
+var listenserver = gamestate.LISTEN_SERVER
 
 func _ready():
 	# Called every time the node is added to the scene.
@@ -10,7 +11,10 @@ func _ready():
 	gamestate.connect("lobby_joined", self, "_update_lobby")
 	gamestate.connect("game_ended", self, "_on_game_ended")
 	gamestate.connect("game_error", self, "_on_game_error")
-	
+
+	if listenserver == false:
+		$connect/server.hide()
+
 	if OS.get_name() == 'HTML5':
 		$Connect/Server.hide()
 		var data = JavaScript.eval("(new URLSearchParams(window.location.hash.replace('#', '', 1))).get('lobby')")
