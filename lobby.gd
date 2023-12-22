@@ -12,10 +12,10 @@ func _ready():
 	gamestate.connect("game_error", self, "_on_game_error")
 	
 	if OS.get_name() == 'HTML5':
-		$connect/server.hide()
+		$Connect/Server.hide()
 		var data = JavaScript.eval("(new URLSearchParams(window.location.hash.replace('#', '', 1))).get('lobby')")
 		if typeof(data) == TYPE_STRING:
-			$connect/lobby.text = data
+			$Connect/Lobby.text = data
 	
 	# Set the player name according to the system username. Fallback to the path.
 	if OS.has_environment("USERNAME"):
@@ -123,7 +123,7 @@ func _on_find_public_ip_pressed():
 func _on_server_toggled(button_pressed):
 	if button_pressed:
 		Server.listen(port)
-		$connect/server.text = "Stop"
+		$Connect/Server.text = "Stop"
 	else:
 		Server.stop()
-		$connect/server.text = "Listen"
+		$Connect/Server.text = "Listen"
