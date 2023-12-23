@@ -13,7 +13,7 @@ func _ready():
 	gamestate.connect("game_error", self, "_on_game_error")
 
 	if listenserver == false:
-		$connect/server.hide()
+		$Connect/Server.hide()
 
 	if OS.get_name() == 'HTML5':
 		$Connect/Server.hide()
@@ -65,6 +65,10 @@ func _on_join_pressed():
 		$Connect/ErrorLabel.text = "Must specify a lobby when joining!"
 		return
 
+	if ip == "wss://your-applink.koyeb.app":
+		$Connect/ErrorLabel.text = "Please enter a valid Signaling-server!"
+		return
+		
 	$Connect/ErrorLabel.text = ""
 	$Connect/Host.disabled = true
 	$Connect/Join.disabled = true
