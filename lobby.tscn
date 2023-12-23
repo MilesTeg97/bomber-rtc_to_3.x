@@ -69,6 +69,7 @@ size_flags_vertical = 2
 
 
 [node name="FindPublicIP" type="LinkButton" parent="Players"]
+visible = false
 margin_left = 168.0
 margin_top = 393.5
 margin_right = 341.0
